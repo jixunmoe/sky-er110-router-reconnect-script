@@ -27,4 +27,10 @@ Usage
     node index.js
 
 
+License
+-------
+
+GNU General Public License v3
+
+
 [nvm]: https://github.com/creationix/nvm#installation
