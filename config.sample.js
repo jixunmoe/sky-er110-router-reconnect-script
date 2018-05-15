@@ -1,4 +1,4 @@
-// Sky ER110 - Internet Reconnect Script Configuration
+// Sky ER110 Router - Internet Reconnect Script Configuration
 
 module.exports = {
 	// Sky Router IP Address.

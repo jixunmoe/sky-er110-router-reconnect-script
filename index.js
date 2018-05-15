@@ -1,4 +1,4 @@
-// Sky ER110 - Internet Reconnect Script
+// Sky ER110 Router - Internet Reconnect Script
 // Used to quickly reconnect sky router to the internet,
 //   which usually fixes speed drop and/or lags.
 // (C) Jixun Moe <jixun.moe@gmail.com>
