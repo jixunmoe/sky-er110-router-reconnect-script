@@ -22,25 +22,31 @@ const UrlAction = getUrl('/sky_st_poe.sky');
 const basicAuth = b64(`${user}:${pass}`);
 const Authorization = `Basic ${basicAuth}`;
 
-async function routerGetSessionKey () {
-	const res = await fetch(UrlGetSessionKey, {
+async function request(url, opts = {}) {
+	const res = await fetch(url, {
 		headers: { Authorization },
+		...opts,
 	});
-	
-	const text = await res.text();
-	const sessionKey = text.match(/sessionKey" value="(\d+)"/)[1];
-	return sessionKey;
+	return res.text();
+}
+
+async function preloadSession() {
+	await request(UrlGetSessionKey);
+}
+
+async function routerGetSessionKey () {
+	const html = await request(UrlGetSessionKey);
+	const match = html.match(/sessionKey" value="(\d+)"/);
+	return match ? match[1] : '';
 }
 
 async function routerAction(action) {
 	const sessionKey = await routerGetSessionKey();
-	const res = await fetch(UrlAction, {
+
+	await request(UrlAction, {
 		method: 'POST',
 		body: `interval=0&todo=${action}&sessionKey=${sessionKey}`,
-		headers: { Authorization },
 	});
-	
-	const text = await res.text();
 }
 
 async function restartRouter() {
@@ -51,6 +57,20 @@ async function restartRouter() {
 	await routerAction('connect');
 }
 
-restartRouter().then(() => console.info('done'));
+async function main () {
+	console.info('initialise session...');
+	await preloadSession();
 
+	for (let i = 0; i < 3; i++) {
+		try {
+			console.info('try to restart connection...');
+			await restartRouter();
+			console.info('done');
+			break;
+		} catch (error) {
+			console.info('failed');
+		}
+	}
+}
 
+main().catch(error => console.error(error));
