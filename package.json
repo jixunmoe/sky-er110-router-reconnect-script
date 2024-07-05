@@ -1,17 +1,19 @@
 {
   "name": "sky_reconnect",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Reconnect SKY Router to the internet to clear lags.",
   "main": "index.js",
-  "author": "Jixun Moe",
-  "license": "GPL-3.0-only",
+  "author": "Jixun",
+  "license": "MIT",
   "private": false,
   "dependencies": {
-    "axios": "^1.7.2",
-    "node-fetch": "^3.3.2"
+    "axios": "^1.7.2"
   },
   "devDependencies": {
     "prettier": "^3.3.2"
+  },
+  "scripts": {
+    "start": "node index.js"
   },
   "prettier": {
     "singleQuote": true,
