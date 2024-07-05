@@ -4,73 +4,65 @@
 // (C) Jixun Moe <jixun.moe@gmail.com>
 // MIT Licensed
 
-const fetch = require('node-fetch');
+import Axios from 'axios';
 
 const { ip, user, pass } = require('./config.js');
 
-function getUrl(path) {
-	return `http://${ip}${path}`;
-}
+const axios = Axios.create({
+  baseURL: `http://${ip}`,
+});
 
-function b64(text) {
-	return Buffer.from(text).toString('base64');
-}
+axios.interceptors.request.use((config) => {
+  config.auth = { username: user, password: pass };
 
-const UrlGetSessionKey = getUrl('/sky_st_poe.html');
-const UrlAction = getUrl('/sky_st_poe.sky');
+  return config;
+});
 
-const basicAuth = b64(`${user}:${pass}`);
-const Authorization = `Basic ${basicAuth}`;
-
-async function request(url, opts = {}) {
-	const res = await fetch(url, {
-		headers: { Authorization },
-		...opts,
-	});
-	return res.text();
-}
+const ROUTER_PAGE = '/sky_st_poe.html';
+const ROUTER_ACTION_ENDPOINT = '/sky_st_poe.sky';
 
 async function preloadSession() {
-	await request(UrlGetSessionKey);
+  await request(ROUTER_PAGE);
 }
 
-async function routerGetSessionKey () {
-	const html = await request(UrlGetSessionKey);
-	const match = html.match(/sessionKey" value="(\d+)"/);
-	return match ? match[1] : '';
+async function routerGetSessionKey() {
+  const html = await request(ROUTER_PAGE);
+  const match = html.match(/sessionKey" value="(\d+)"/);
+  return match ? match[1] : '';
 }
 
 async function routerAction(action) {
-	const sessionKey = await routerGetSessionKey();
+  const sessionKey = await routerGetSessionKey();
 
-	await request(UrlAction, {
-		method: 'POST',
-		body: `interval=0&todo=${action}&sessionKey=${sessionKey}`,
-	});
+  await request(ROUTER_ACTION_ENDPOINT, {
+    method: 'POST',
+    body: { interval: 0, todo: action, sessionKey },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  });
 }
 
 async function restartRouter() {
-	console.info('disconnect...');
-	await routerAction('disconnect');
-	
-	console.info('connect...');
-	await routerAction('connect');
+  console.info('disconnect...');
+  await routerAction('disconnect');
+
+  console.info('connect...');
+  await routerAction('connect');
 }
 
-async function main () {
-	console.info('initialise session...');
-	await preloadSession();
+async function main() {
+  console.info('initialise session...');
+  await preloadSession();
 
-	for (let i = 0; i < 3; i++) {
-		try {
-			console.info('try to restart connection...');
-			await restartRouter();
-			console.info('done');
-			break;
-		} catch (error) {
-			console.info('failed');
-		}
-	}
+  for (let i = 0; i < 3; i++) {
+    try {
+      console.info('try to restart connection...');
+      await restartRouter();
+      console.info('done');
+      break;
+    } catch (error) {
+      console.info('failed');
+    }
+  }
 }
 
-main().catch(error => console.error(error));
+main().catch(console.error);
